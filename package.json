@@ -1,0 +1,25 @@
+{
+  "name": "playit",
+  "version": "1.0.0",
+  "description": "Video streaming webApp for watching and uploading videos as well as chat posts",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Viek-krishan/PlayIt.git"
+  },
+  "keywords": [
+    "JavaScript",
+    "node.js",
+    "express.js",
+    "MongoDB"
+  ],
+  "author": "Vivek Krishan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Viek-krishan/PlayIt/issues"
+  },
+  "homepage": "https://github.com/Viek-krishan/PlayIt#readme"
+}
