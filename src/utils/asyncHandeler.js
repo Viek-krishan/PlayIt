@@ -1,11 +1,11 @@
 // asyncHandeler using promises ---------------------------------------
 const asyncHandeler = (RequestHandeler) => {
-  (req, res, next) => {
+  return (req, res, next) => {
     Promise.resolve(RequestHandeler(req, res, next)).catch((err) => next(err));
   };
 };
 
-export { asyncHandeler };
+export default asyncHandeler;
 
 // asyncHandeler using try and catch ---------------------------------
 //
