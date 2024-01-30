@@ -35,7 +35,16 @@ const RegisterUser = asyncHandeler(async (req, res) => {
     throw new ApiError(400, "Given username or email is already registered");
 
   const avatarLocalPath = req.files.avatar[0]?.path;
-  const coverImageLocalPath = req.files.coverImage[0]?.path;
+  // const coverImageLocalPath = req.files.coverImage[0]?.path;
+  let coverImageLocalPath;
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files.coverImage[0].path;
+    // console.log(coverImageLocalPath);
+  }
 
   if (!avatarLocalPath)
     throw new ApiError(400, "Avatar is required. Please upload");
@@ -45,7 +54,7 @@ const RegisterUser = asyncHandeler(async (req, res) => {
 
   if (!Avatar)
     throw new ApiError(
-      400,
+      401,
       "Something went wrong with Avatar!!, Please upload once again"
     );
 
@@ -53,7 +62,7 @@ const RegisterUser = asyncHandeler(async (req, res) => {
     fullName,
     email,
     password,
-    username: username.lowerCase(),
+    username,
     avatar: Avatar.url,
     coverImage: CoverImage?.url || "",
   });
