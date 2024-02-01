@@ -4,6 +4,25 @@ import { User } from "../models/user.model.js";
 import UploadFileToCloudinary from "../utils/Cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
+const generateAccessAndRefreshTokens = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+
+    const AccessToken = await user.GenerateAccessToken();
+    const RefreshToken = await user.GenerateRefreshToken();
+
+    user.refreshToken(RefreshToken);
+    user.save();
+
+    return { AccessToken, RefreshToken };
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Something went wrong while generating access and refresh tokens"
+    );
+  }
+};
+
 const RegisterUser = asyncHandeler(async (req, res) => {
   /*fetch data from frontend
 		  check for validation
@@ -84,25 +103,6 @@ const RegisterUser = asyncHandeler(async (req, res) => {
     );
 });
 
-const generateAccessAndRefreshTokens = async (userId) => {
-  try {
-    const user = await User.findById(userId);
-
-    const AccessToken = await user.GenerateAccessToken();
-    const RefreshToken = await user.GenerateRefreshToken();
-
-    user.refreshToken(RefreshToken);
-    user.save();
-
-    return { AccessToken, RefreshToken };
-  } catch (error) {
-    throw new ApiError(
-      500,
-      "Something went wrong while generating access and refresh tokens"
-    );
-  }
-};
-
 const LogInUser = asyncHandeler(async (req, res) => {
   /*
 	    1. get the logIn data from req.body - username, email, password
@@ -176,4 +176,41 @@ const LogOutUser = asyncHandeler(async (req, res) => {
     .clearCookie("RefreshToken", options);
 });
 
-export { RegisterUser, LogInUser, LogOutUser };
+const regenerateRefreshToken = asyncHandeler(async (req, res) => {
+  try {
+    const token = req.cookies.RefreshToken || req.body.RefreshToken;
+
+    if (!token) throw new ApiError(401, "Unauthorized request");
+
+    const DecodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRATE);
+
+    const user = User.findById(DecodedToken._id).select(
+      "-password -refreshToken"
+    );
+
+    if (!user) throw new ApiError(400, "Invalid Token");
+
+    const { RefreshToken, AccessToken } = generateAccessAndRefreshTokens(
+      user._id
+    );
+
+    return res
+      .status(201)
+      .cookie("RefreshToken", RefreshToken, options)
+      .cookie("AccessToken", AccessToken, options)
+      .json(
+        new ApiResponse(
+          201,
+          {
+            RefreshToken,
+            AccessToken,
+          },
+          "Refresh token regenerated successfully"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(401, error.message || "Invalid Token");
+  }
+});
+
+export { RegisterUser, LogInUser, LogOutUser, regenerateRefreshToken };
