@@ -1,7 +1,10 @@
 import asyncHandeler from "../utils/asyncHandeler.js";
 import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import UploadFileToCloudinary from "../utils/Cloudinary.js";
+import {
+  UploadFileToCloudinary,
+  DeleteFileFromCloudinary,
+} from "../utils/Cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
@@ -287,6 +290,9 @@ const UpdateAvatar = asyncHandeler(async (req, res) => {
     { new: true }
   ).select("-password");
 
+  const DeletedAvatar = await DeleteFileFromCloudinary(req.user.avatar);
+  console.log(DeletedAvatar);
+
   return res
     .status(200)
     .json(new ApiResponse(200, { user }, "Avatar updated successfully"));
@@ -313,6 +319,9 @@ const UpdateCoverImage = asyncHandeler(async (req, res) => {
     },
     { new: true }
   ).select("-password");
+
+  const DeletedCoverImg = await DeleteFileFromCloudinary(req.user.avatar);
+  console.log(DeletedCoverImg);
 
   return res
     .status(200)
