@@ -11,15 +11,17 @@ import mongoose from "mongoose";
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
+    // console.log(user);
 
     const AccessToken = await user.GenerateAccessToken();
     const RefreshToken = await user.GenerateRefreshToken();
 
-    user.refreshToken(RefreshToken);
+    user.refreshToken = RefreshToken;
     user.save();
 
     return { AccessToken, RefreshToken };
   } catch (error) {
+    console.log(error);
     throw new ApiError(
       500,
       "Something went wrong while generating access and refresh tokens"
@@ -120,7 +122,7 @@ const LogInUser = asyncHandeler(async (req, res) => {
   const { email, username, password } = req.body;
 
   if (!(email || username))
-    throw ApiError(401, "Eigther Username or email is required");
+    throw new ApiError(401, "Either username or email is required");
 
   const user = await User.findOne({
     $or: [{ username }, { email }],
@@ -133,7 +135,7 @@ const LogInUser = asyncHandeler(async (req, res) => {
   if (!isValid) throw new ApiError(401, "Entered Credential is not correct");
 
   const { AccessToken, RefreshToken } = await generateAccessAndRefreshTokens(
-    user._id
+    user?._id
   );
 
   const logedInUser = await User.findById(user._id).select(
@@ -452,15 +454,15 @@ const GetWatchHistory = asyncHandeler(async (req, res) => {
 });
 
 export {
-  RegisterUser,
+  GetUser,
   LogInUser,
   LogOutUser,
-  regenerateRefreshToken,
-  ChangeCurrentPassword,
-  GetUser,
-  UpdateUserDetails,
   UpdateAvatar,
-  UpdateCoverImage,
-  GetUserChannelDetails,
+  RegisterUser,
   GetWatchHistory,
+  UpdateCoverImage,
+  UpdateUserDetails,
+  ChangeCurrentPassword,
+  GetUserChannelDetails,
+  regenerateRefreshToken,
 };
