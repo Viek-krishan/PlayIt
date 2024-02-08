@@ -7,11 +7,11 @@ import {
 } from "../utils/Cloudinary.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
-    // console.log(user);
 
     const AccessToken = await user.GenerateAccessToken();
     const RefreshToken = await user.GenerateRefreshToken();
@@ -190,15 +190,20 @@ const regenerateRefreshToken = asyncHandeler(async (req, res) => {
 
     const DecodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRATE);
 
-    const user = User.findById(DecodedToken._id).select(
+    const user = await User.findById(DecodedToken._id).select(
       "-password -refreshToken"
     );
 
     if (!user) throw new ApiError(400, "Invalid Token");
 
-    const { RefreshToken, AccessToken } = generateAccessAndRefreshTokens(
+    const { RefreshToken, AccessToken } = await generateAccessAndRefreshTokens(
       user._id
     );
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
 
     return res
       .status(201)
@@ -258,7 +263,7 @@ const UpdateUserDetails = asyncHandeler(async (req, res) => {
     throw new ApiError(400, "all fields are required");
   }
 
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user._id,
     {
       $set: {
@@ -269,7 +274,9 @@ const UpdateUserDetails = asyncHandeler(async (req, res) => {
     { new: true }
   ).select("-password");
 
-  return res.status(200).json(200, { user }, "User updation successfully");
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { user }, "User updation successfully"));
 });
 
 const UpdateAvatar = asyncHandeler(async (req, res) => {
@@ -338,7 +345,7 @@ const GetUserChannelDetails = asyncHandeler(async (req, res) => {
     throw new ApiError(400, "Username not found");
   }
 
-  const Channel = User.aggregate([
+  const Channel = await User.aggregate([
     {
       $match: {
         username: username,
@@ -400,7 +407,7 @@ const GetUserChannelDetails = asyncHandeler(async (req, res) => {
 });
 
 const GetWatchHistory = asyncHandeler(async (req, res) => {
-  const user = User.aggregate([
+  const user = await User.aggregate([
     {
       $match: {
         _id: new mongoose.Types.ObjectId(req.user._id),
@@ -433,7 +440,7 @@ const GetWatchHistory = asyncHandeler(async (req, res) => {
           {
             $addFields: {
               owner: {
-                $arrayElementAt: ["$owner", 0],
+                $arrayElemAt: ["$owner", 0],
               },
             },
           },
