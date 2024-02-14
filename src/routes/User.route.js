@@ -11,7 +11,7 @@ import {
   ChangeCurrentPassword,
   GetUserChannelDetails,
   regenerateRefreshToken,
-} from "../controllers/Register.controller.js";
+} from "../controllers/User.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { VerifyUser } from "../middlewares/auth.middleware.js";
 

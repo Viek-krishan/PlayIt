@@ -1,10 +1,8 @@
-import asyncHandeler from "../utils/asyncHandeler.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import {
-  UploadFileToCloudinary,
-  DeleteFileFromCloudinary,
-} from "../utils/Cloudinary.js";
+// import {UploadFileToCloudinary,
+//   DeleteFileFromCloudinary} from "../utils/Cloudinary.js"
 import ApiResponse from "../utils/ApiResponse.js";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
@@ -29,7 +27,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 };
 
-const RegisterUser = asyncHandeler(async (req, res) => {
+const RegisterUser = asyncHandler(async (req, res) => {
   /*fetch data from frontend
 		  check for validation
 		  check if user already exist
@@ -109,7 +107,7 @@ const RegisterUser = asyncHandeler(async (req, res) => {
     );
 });
 
-const LogInUser = asyncHandeler(async (req, res) => {
+const LogInUser = asyncHandler(async (req, res) => {
   /*
 	    1. get the logIn data from req.body - username, email, password
 	    2. check for the authentication data
@@ -164,7 +162,7 @@ const LogInUser = asyncHandeler(async (req, res) => {
     );
 });
 
-const LogOutUser = asyncHandeler(async (req, res) => {
+const LogOutUser = asyncHandler(async (req, res) => {
   await User.findOneAndUpdate(req.user._id, {
     $unset: {
       refreshToken: 1,
@@ -182,7 +180,7 @@ const LogOutUser = asyncHandeler(async (req, res) => {
     .clearCookie("RefreshToken", options);
 });
 
-const regenerateRefreshToken = asyncHandeler(async (req, res) => {
+const regenerateRefreshToken = asyncHandler(async (req, res) => {
   try {
     const token = req.cookies.RefreshToken || req.body.RefreshToken;
 
@@ -224,7 +222,7 @@ const regenerateRefreshToken = asyncHandeler(async (req, res) => {
   }
 });
 
-const ChangeCurrentPassword = asyncHandeler(async (req, res) => {
+const ChangeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
   const user = await User.findById(req.user?._id);
@@ -244,7 +242,7 @@ const ChangeCurrentPassword = asyncHandeler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password changed successfully"));
 });
 
-const GetUser = asyncHandeler(async (req, res) => {
+const GetUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
@@ -256,7 +254,7 @@ const GetUser = asyncHandeler(async (req, res) => {
     );
 });
 
-const UpdateUserDetails = asyncHandeler(async (req, res) => {
+const UpdateUserDetails = asyncHandler(async (req, res) => {
   const { fullName, email } = req.body;
 
   if (!fullName || !email) {
@@ -279,7 +277,7 @@ const UpdateUserDetails = asyncHandeler(async (req, res) => {
     .json(new ApiResponse(200, { user }, "User updation successfully"));
 });
 
-const UpdateAvatar = asyncHandeler(async (req, res) => {
+const UpdateAvatar = asyncHandler(async (req, res) => {
   const AvatartLocalPath = req.file?.path;
 
   if (!AvatartLocalPath) throw new ApiError(400, "Avatar file is missing");
@@ -308,7 +306,7 @@ const UpdateAvatar = asyncHandeler(async (req, res) => {
     .json(new ApiResponse(200, { user }, "Avatar updated successfully"));
 });
 
-const UpdateCoverImage = asyncHandeler(async (req, res) => {
+const UpdateCoverImage = asyncHandler(async (req, res) => {
   const CoverImageLocalPath = req.file?.path;
 
   if (!CoverImageLocalPath)
@@ -338,7 +336,7 @@ const UpdateCoverImage = asyncHandeler(async (req, res) => {
     .json(new ApiResponse(200, { user }, "Avatar updated successfully"));
 });
 
-const GetUserChannelDetails = asyncHandeler(async (req, res) => {
+const GetUserChannelDetails = asyncHandler(async (req, res) => {
   const { username } = req.params;
 
   if (!username?.trim()) {
@@ -406,7 +404,7 @@ const GetUserChannelDetails = asyncHandeler(async (req, res) => {
     .json(new ApiResponse(200, Channel[0], "Channel Festched successfully"));
 });
 
-const GetWatchHistory = asyncHandeler(async (req, res) => {
+const GetWatchHistory = asyncHandler(async (req, res) => {
   const user = await User.aggregate([
     {
       $match: {
